@@ -1,19 +1,31 @@
+use std::sync::{Arc, Mutex};
+
 use tauri::{Manager, WindowEvent};
 
 struct DeepSettings {
-    exit: bool,
+    exit: Arc<Mutex<bool>>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(DeepSettings {
+            exit: Arc::new(Mutex::new(false)),
+        })
         .setup(|app| {
-            let window = app.get_webview_window("main").unwrap();
-            window.set_fullscreen(true).unwrap();
+            let app_handle = app.handle();
 
-            window.on_window_event(|event| {
-                if let WindowEvent::CloseRequested { api, .. } = event {
-                    api.prevent_close();
+            let window = app.get_webview_window("main").unwrap();
+            //window.set_fullscreen(true).unwrap();
+
+            let app_handle_window_event = app_handle.clone();
+            window.on_window_event(move |event| {
+                let settings = app_handle_window_event.state::<DeepSettings>();
+                match event {
+                    WindowEvent::CloseRequested { api, .. } => if !*settings.exit.lock().unwrap() {
+                        api.prevent_close();
+                    },
+                    _ => {}
                 }
             });
 

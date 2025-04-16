@@ -26,6 +26,14 @@ div.taskbar {
     align-items: center;
 }
 
+div.quickaction {
+    background-color: #00000000;
+    ;
+}
+div.wifilogo {
+    background-color: #00000000;
+}
+
 p.time {
     margin-left: auto;
     text-align: center;
